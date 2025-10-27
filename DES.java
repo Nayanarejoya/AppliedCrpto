@@ -1,27 +1,46 @@
-package mypackage; 
-import javax.crypto.Cipher; 
-import javax.crypto.SecretKey; 
-import javax.crypto. SecretKeyFactory; 
-import javax.crypto.spec.DESKeySpec; 
-import java.util.Base64; 
-import java.util.Scanner; 
-public class DES{ 
-public static void main(String[] args) throws Exception { 
-Scanner scanner = new Scanner(System.in); 
-System.out.print("Enter message to encrypt: "); 
-String message = scanner.nextLine(); 
-System.out.print("Enter 8-character key: "); 
-String key = scanner.nextLine(); 
-DESKeySpec keySpec = new DESKeySpec(key.getBytes("UTF-8")); 
-SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec); 
-Cipher cipher = Cipher.getInstance("DES"); 
-cipher.init(Cipher.ENCRYPT_MODE,secretKey); 
-byte[] encrypted = cipher.doFinal (message.getBytes("UTF-8")); 
-String encryptedBase64 = Base64.getEncoder().encodeToString(encrypted); 
-System.out.println("Encrypted: " + encryptedBase64); 
-cipher.init(Cipher. DECRYPT_MODE, secretKey); 
-byte[] decrypted = cipher.doFinal (Base64.getDecoder().decode(encryptedBase64)); 
-System.out.println("Decrypted: " + new String(decrypted, "UTF-8")); 
-scanner.close(); 
-} 
-} 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
+import java.util.Base64;
+import java.util.Scanner;
+
+public class SimpleDES {
+
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print("Enter the message to encrypt: ");
+            String originalText = scanner.nextLine();
+
+            System.out.print("Enter a secret key (at least 8 characters): ");
+            String keyString = scanner.nextLine();
+
+            if (keyString.length() < 8) {
+                System.out.println("Error: The DES key must be at least 8 characters long.");
+                return;
+            }
+
+            DESKeySpec desKeySpec = new DESKeySpec(keyString.getBytes());
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+            SecretKey secretKey = keyFactory.generateSecret(desKeySpec);
+
+            Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(originalText.getBytes());
+            String encryptedText = Base64.getEncoder().encodeToString(encryptedBytes);
+            
+            System.out.println("Original Text: " + originalText);
+            System.out.println("Encrypted Text: " + encryptedText);
+
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
+            String decryptedText = new String(decryptedBytes);
+
+            System.out.println("Decrypted Text: " + decryptedText);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
