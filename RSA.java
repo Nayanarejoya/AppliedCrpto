@@ -1,51 +1,35 @@
-import java.math.BigInteger;
-import java.util.Scanner;
-public class RSA {
-    private BigInteger n;
-    private BigInteger e; 
-    private BigInteger d; 
-
-    public RSA() {
-        BigInteger p = BigInteger.valueOf(61);
-        BigInteger q = BigInteger.valueOf(53);
-        n = p.multiply(q);
-        BigInteger phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
-        e = BigInteger.valueOf(17);
-        d = e.modInverse(phi);
-    }
-    public BigInteger encrypt(BigInteger message) {
-        if (message.compareTo(n) >= 0) {
-            throw new IllegalArgumentException("Message too large.");
-        }
-        return message.modPow(e, n);
-    }
-    public BigInteger decrypt(BigInteger ciphertext) {
-        return ciphertext.modPow(d, n);
-    }
-    public BigInteger getModulus() { return n; }
-    public BigInteger getPublicKey() { return e; }
-    public BigInteger getPrivateKey() { return d; }
-
-    public static void main(String[] args) {
-        RSA rsa = new RSA();
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("RSA Demo");
-        System.out.println("n: " + rsa.n);
-        System.out.println("e: " + rsa.e);
-        System.out.println("d: " + rsa.d + "\n");
-
-        System.out.print("Enter message (integer < n): ");
-        BigInteger message = scanner.nextBigInteger();
-
-        BigInteger ciphertext = rsa.encrypt(message);
-        System.out.println("Ciphertext: " + ciphertext);
-
-        BigInteger decrypted = rsa.decrypt(ciphertext);
-        System.out.println("Decrypted: " + decrypted);
-
-        System.out.println(message.equals(decrypted) ? "Success!" : "Failed!");
-
-        scanner.close();
-    }
+package mypackage; 
+import java.security.KeyPair; 
+import java.security.KeyPairGenerator; 
+import java.security.PrivateKey; 
+import java.security.PublicKey; 
+import javax.crypto.Cipher; 
+import java.util.Base64; 
+import java.util.Scanner; 
+public class rsa { 
+public static void main(String[] args) { 
+try (Scanner scanner = new Scanner(System.in)) { 
+KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); 
+generator.initialize(2048); 
+KeyPair keyPair = generator.generateKeyPair(); 
+PublicKey publicKey = keyPair.getPublic(); 
+PrivateKey privateKey = keyPair.getPrivate(); 
+System.out.print("Enter the message to encrypt: "); 
+String message = scanner.nextLine(); 
+Cipher encryptCipher = Cipher.getInstance("RSA"); 
+encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey); 
+byte[] encryptedMessageBytes = encryptCipher.doFinal(message.getBytes()); 
+String encryptedText = Base64.getEncoder().encodeToString(encryptedMessageBytes); 
+System.out.println("Original Message: " + message); 
+System.out.println("Encrypted Text: " + encryptedText); 
+Cipher decryptCipher = Cipher.getInstance("RSA"); 
+decryptCipher.init(Cipher.DECRYPT_MODE, privateKey); 
+byte[] decodedMessageBytes = Base64.getDecoder().decode(encryptedText); 
+byte[] decryptedMessageBytes = decryptCipher.doFinal(decodedMessageBytes); 
+String decryptedText = new String(decryptedMessageBytes); 
+System.out.println("Decrypted Text: " + decryptedText); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
 }
